@@ -1,0 +1,657 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Rsync备份服务 | DevOps</title><meta name="author" content="Metta"><meta name="copyright" content="Metta"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0. 配置文件详解123456789101112131415161718192021222324[root@backup01 ~]# cat &#x2F;etc&#x2F;rsyncd.conf ###全局配置fake super &#x3D; yes  uid &#x3D; rsync   gid &#x3D; rsync   use chroot &#x3D; no   max connections &#x3D; 2000timeout &#x3D; 600pid f">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rsync备份服务">
+<meta property="og:url" content="https://mettafy.github.io/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/01-Rsync%E5%A4%87%E4%BB%BD/index.html">
+<meta property="og:site_name" content="DevOps">
+<meta property="og:description" content="0. 配置文件详解123456789101112131415161718192021222324[root@backup01 ~]# cat &#x2F;etc&#x2F;rsyncd.conf ###全局配置fake super &#x3D; yes  uid &#x3D; rsync   gid &#x3D; rsync   use chroot &#x3D; no   max connections &#x3D; 2000timeout &#x3D; 600pid f">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://mettafy.github.io/img/touxiang.png">
+<meta property="article:published_time" content="2024-07-29T16:10:00.000Z">
+<meta property="article:modified_time" content="2024-08-01T10:59:34.935Z">
+<meta property="article:author" content="Metta">
+<meta property="article:tag" content="文档">
+<meta property="article:tag" content="基础">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mettafy.github.io/img/touxiang.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://mettafy.github.io/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/01-Rsync%E5%A4%87%E4%BB%BD/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体中文","cht_to_chs":"你已切换为简体中文","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Rsync备份服务',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-08-01 18:59:34'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'"><script src="https://npm.elemecdn.com/echarts@4.9.0/dist/echarts.min.js"></script><!-- hexo injector head_end start --><link rel="stylesheet" href="https://unpkg.zhimg.com/hexo-butterfly-footer-beautify@1.0.0/lib/runtime.min.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/touxiang.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="DevOps"><span class="site-name">DevOps</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Rsync备份服务</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-07-29T16:10:00.000Z" title="发表于 2024-07-30 00:10:00">2024-07-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-08-01T10:59:34.935Z" title="更新于 2024-08-01 18:59:34">2024-08-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/">综合架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5589</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>26分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Rsync备份服务"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><p><img src="https://jsd.cdn.zzko.cn/gh/Tripitz/Markdown-img@main/Rsync+NFS/202403281337589.png" alt="服务使用流程"></p>
+<h1 id="0-配置文件详解"><a href="#0-配置文件详解" class="headerlink" title="0. 配置文件详解"></a>0. 配置文件详解</h1><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /etc/rsyncd.conf </span><br><span class="line"><span class="comment">###全局配置</span></span><br><span class="line">fake super = <span class="built_in">yes</span>  </span><br><span class="line">uid = rsync   </span><br><span class="line">gid = rsync   </span><br><span class="line">use <span class="built_in">chroot</span> = no   </span><br><span class="line">max connections = 2000</span><br><span class="line"><span class="built_in">timeout</span> = 600</span><br><span class="line">pid file = /var/run/rsyncd.pid</span><br><span class="line">lock file = /var/run/rsync.lock</span><br><span class="line"></span><br><span class="line"><span class="built_in">log</span> file = /var/log/rsyncd.log</span><br><span class="line">ignore errors</span><br><span class="line"><span class="built_in">read</span> only = <span class="literal">false</span></span><br><span class="line">list = <span class="literal">false</span></span><br><span class="line">hosts allow = x.x.x.x/24</span><br><span class="line">hosts deny = x.x.x.x/32</span><br><span class="line">auth <span class="built_in">users</span> = rsync_backup</span><br><span class="line">secrets file = /etc/rsync.password</span><br><span class="line"></span><br><span class="line"><span class="comment">### 局部配置（模块）</span></span><br><span class="line">[xxxx]</span><br><span class="line">comment = xxxx</span><br><span class="line">path = /xxx</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>全局配置</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fake super</td>
+<td>不开启，则 centos7 传输报错<br>（伪装成 root 权限）</td>
+</tr>
+<tr>
+<td>uid</td>
+<td>rsync 运行时所有者</td>
+</tr>
+<tr>
+<td>gid</td>
+<td>rsync 运行时所属组</td>
+</tr>
+<tr>
+<td>use chroot</td>
+<td>实现额外的安全防护，一般不开启</td>
+</tr>
+<tr>
+<td>max connections</td>
+<td>最大连接数</td>
+</tr>
+<tr>
+<td>timeout</td>
+<td>连接超时时间</td>
+</tr>
+<tr>
+<td>pid file</td>
+<td>pid 文件存放目录</td>
+</tr>
+<tr>
+<td>lock file</td>
+<td>进程&#x2F;服务的锁文件，防止重复运行</td>
+</tr>
+<tr>
+<td>log file</td>
+<td>rsync 服务端日志</td>
+</tr>
+<tr>
+<td>ignore errors</td>
+<td>忽略一些错误（IO 错误）</td>
+</tr>
+<tr>
+<td>read only</td>
+<td>可以进行读写</td>
+</tr>
+<tr>
+<td>list</td>
+<td>关闭 rsync 服务端列表功能</td>
+</tr>
+<tr>
+<td>hosts allow</td>
+<td>允许哪个 ip 或网段访问，白名单</td>
+</tr>
+<tr>
+<td>hosts deny</td>
+<td>拒绝某个 ip 或网段访问，黑名单</td>
+</tr>
+<tr>
+<td>auth users</td>
+<td>rsync 服务端用于验证的用户</td>
+</tr>
+<tr>
+<td>secrets file</td>
+<td>rsync 服务端用于验证的密码文件</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>局部（模块）</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>[xxxx]</td>
+<td>模块名字，用户访问服务端时指定</td>
+</tr>
+<tr>
+<td>comment</td>
+<td>注释说明</td>
+</tr>
+<tr>
+<td>path</td>
+<td>模块对应的目录</td>
+</tr>
+</tbody></table>
+<h1 id="1-备份服务概述"><a href="#1-备份服务概述" class="headerlink" title="1.   备份服务概述"></a>1.   备份服务概述</h1><ul>
+<li>备份服务：rsyncd 服务，可以在不同主机之间传输数据</li>
+<li>特点：<ul>
+<li>rsync 是个服务也是命令</li>
+<li>使用方便，具有多种模式（本地模式、远程模式、守护进程模式）</li>
+<li>传输数据时使用的是增量传输</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>增量与全量：</p>
+<ul>
+<li><p>全量：无论多少数据，旧的数据与新的数据 <code>全部</code> 推送到指定主机（例如 scp）</p>
+</li>
+<li><p>增量：第一次全量备份，之后只会把 <code>修改、新建</code> 的数据推送到指定主机（例如 rsync）</p>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将/etc/sysconfig/ 推送到目标主机的/mnt/下</span></span><br><span class="line"></span><br><span class="line">全量（通过scp）：</span><br><span class="line">scp -r /etc/sysconfig/  root@192.168.1.103:/mnt</span><br><span class="line"><span class="comment">## 传输结果不展示</span></span><br><span class="line">结论：无论源数据与目标数据是否重复，依旧是全部推送</span><br><span class="line"></span><br><span class="line">增量（通过rsync）:</span><br><span class="line"><span class="comment"># 第一次传输时由于目标无文件，所以是全量推送</span></span><br><span class="line">rsync -avz /etc/sysconfig/ root@192.168.1.103:/mnt</span><br><span class="line">root@192.168.1.103 password: </span><br><span class="line">sending incremental file list</span><br><span class="line">./</span><br><span class="line">anaconda</span><br><span class="line">authconfig</span><br><span class="line">chronyd</span><br><span class="line">cpupower</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 第二次传输，有重复文件且无新文件，则没有推送任何文件到指定主机</span></span><br><span class="line">rsync -avz /etc/sysconfig/ root@192.168.1.103:/mnt</span><br><span class="line">root@192.168.1.103 password: </span><br><span class="line">sending incremental file list</span><br><span class="line"></span><br><span class="line">sent 1,340 bytes  received 16 bytes  542.40 bytes/sec</span><br><span class="line">total size is 169,720  speedup is 125.16</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="2-Rsync-企业应用场景"><a href="#2-Rsync-企业应用场景" class="headerlink" title="2.  Rsync 企业应用场景"></a>2.  Rsync 企业应用场景</h1><table>
+<thead>
+<tr>
+<th>应用场景</th>
+<th>应用建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>rsync 作为命令使用</td>
+<td>临时拉取、推送数据。（可以使用 scp 代替）</td>
+</tr>
+<tr>
+<td><code>定时备份：rsync服务+定时任务</code></td>
+<td>定时备份。（案例：定时任务进行备份+rsync 推送备份）</td>
+</tr>
+<tr>
+<td>实时同步：rsync 服务+sersync&#x2F;lsyncd</td>
+<td>解决存储服务单点问题</td>
+</tr>
+<tr>
+<td>rsync 服务进行异地容灾</td>
+<td>通过 rsync 将备份推送到异地</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>单点问题：一个服务只有 1 个节点，一旦出问题，该服务将无法使用</p>
+</blockquote>
+<h1 id="3-推送与拉取的区别"><a href="#3-推送与拉取的区别" class="headerlink" title="3. 推送与拉取的区别"></a>3. 推送与拉取的区别</h1><blockquote>
+<p>两者之间的区别在于：进行的什么操作</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 推送</span></span><br><span class="line">[root@backup01 ~]# rsync /etc/hostname 192.168.1.103:/root/</span><br><span class="line">root@192.168.1.103 password: </span><br><span class="line"></span><br><span class="line"><span class="comment"># 拉取</span></span><br><span class="line">[root@backup01 ~]# rsync 192.168.1.103:/etc/hostname .</span><br><span class="line">root@192.168.1.103 password: </span><br><span class="line">[root@backup01 ~]# <span class="built_in">ls</span></span><br><span class="line">hostname</span><br><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> hostname </span><br><span class="line">nfs01</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://jsd.cdn.zzko.cn/gh/Tripitz/Markdown-img@main/Rsync+NFS/202403291244249.png"></p>
+<h1 id="4-应用场景（使用模式）"><a href="#4-应用场景（使用模式）" class="headerlink" title="4.  应用场景（使用模式）"></a>4.  应用场景（使用模式）</h1><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本地模式（了解）</td>
+<td>一台机器本地进行传输（不推荐使用）</td>
+</tr>
+<tr>
+<td>远程模式</td>
+<td>两台之间传输数据（临时使用可以使用 scp 代替）</td>
+</tr>
+<tr>
+<td><code>rsync守护进程模式(daemon)</code></td>
+<td>多台之间传输数据 (不需要密码)，用于定时备份、定时同步</td>
+</tr>
+</tbody></table>
+<h2 id="4-1-本地模式（不推荐）"><a href="#4-1-本地模式（不推荐）" class="headerlink" title="4.1  本地模式（不推荐）"></a>4.1  本地模式（不推荐）</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -a 源数据目录  目标数据目录</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>👺  注意：源数据目录 <code>/etc</code> 和 <code>/etc/</code> 是不同的<br><code>/etc</code>：指的是 etc 目录以及下面的所有文件<br><code>/etc/</code> ：仅指 etc 目录下的文件</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">[root@backup01 ~]# ll /mnt/</span><br><span class="line">total 0</span><br><span class="line"></span><br><span class="line"><span class="comment">## &#x27;/etc&#x27; 把etc目录也复制了</span></span><br><span class="line">[root@backup01 ~]# rsync -a /etc /mnt</span><br><span class="line">[root@backup01 ~]# ll /mnt/</span><br><span class="line">total 12</span><br><span class="line">drwxr-xr-x 75 root root 8192 Mar  6 18:34 etc</span><br><span class="line"></span><br><span class="line"><span class="comment">## 只复制了etc目录下的文件</span></span><br><span class="line">[root@backup01 ~]# rsync -a /etc/ /mnt</span><br><span class="line">[root@backup01 ~]# ll /mnt/</span><br><span class="line">total 1060</span><br><span class="line">-rw-r--r--  1 root root       16 Jul 28  2023 adjtime</span><br><span class="line">-rw-r--r--  1 root root     1529 Apr  1  2020 aliases</span><br><span class="line">-rw-r--r--  1 root root    12288 Jul 28  2023 aliases.db</span><br><span class="line">drwxr-xr-x  2 root root      236 Jul 28  2023 alternatives</span><br><span class="line">-rw-------  1 root root      541 Aug  9  2019 anacrontab</span><br><span class="line">-rw-r--r--  1 root root       55 Aug  8  2019 asound.conf</span><br><span class="line">drwxr-x---  3 root root       43 Jul 28  2023 audisp</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-2-远程模式⭐"><a href="#4-2-远程模式⭐" class="headerlink" title="4.2 远程模式⭐"></a>4.2 远程模式⭐</h2><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="left">格式</th>
+<th align="center"></th>
+<th align="center"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"></td>
+<td align="left">rsync -a</td>
+<td align="center">源文件</td>
+<td align="center">目标</td>
+</tr>
+<tr>
+<td align="center">推送</td>
+<td align="left">rsync</td>
+<td align="center">&#x2F;etc&#x2F;hostname</td>
+<td align="center">192.168.1.103:&#x2F;root</td>
+</tr>
+<tr>
+<td align="center">拉取</td>
+<td align="left">rsync</td>
+<td align="center">192.168.1.103:&#x2F;etc&#x2F;hostname</td>
+<td align="center">&#x2F;root</td>
+</tr>
+</tbody></table>
+<ul>
+<li>简单案例<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 将hostname推送到103的/tmp目录下</span></span><br><span class="line">[root@backup01 ~]# rsync -av /etc/hostname 192.168.1.103:/tmp</span><br><span class="line">sending incremental file list</span><br><span class="line">hostname</span><br><span class="line">sent 103 bytes  received 35 bytes  92.00 bytes/sec</span><br><span class="line">total size is 9  speedup is 0.07</span><br><span class="line"></span><br><span class="line">[root@nfs01 ~]# ll /tmp/</span><br><span class="line">-rw-r--r-- 1 root root  9 Mar  6 18:31 hostname</span><br></pre></td></tr></table></figure></li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 推送/etc 目录及内容 到103的/tmp下</span></span><br><span class="line"><span class="comment">### 第一次推送是全量</span></span><br><span class="line">[root@backup01 ~]# rsync -a /etc 192.168.1.103:/tmp/</span><br><span class="line"></span><br><span class="line">[root@nfs01 tmp]# ll</span><br><span class="line">total 12</span><br><span class="line">drwxr-xr-x 75 root root 8192 Mar  6 18:34 etc</span><br><span class="line"></span><br><span class="line"><span class="comment">### 推送第二次，会发现并未进行推送</span></span><br><span class="line">[root@backup01 ~]# rsync -av /etc 192.168.1.103:/tmp/</span><br><span class="line">sending incremental file list</span><br><span class="line"></span><br><span class="line">sent 45,814 bytes  received 634 bytes  18,579.20 bytes/sec</span><br><span class="line">total size is 28,357,060  speedup is 610.51</span><br><span class="line"></span><br><span class="line"><span class="comment">#### 创建新文件并再次推送</span></span><br><span class="line">[root@backup01 ~]# <span class="built_in">touch</span> /etc/aaa1111111111111 </span><br><span class="line"></span><br><span class="line"><span class="comment">## - 会发现推送了刚创建的新文件</span></span><br><span class="line">[root@backup01 ~]# rsync -av /etc 192.168.1.103:/tmp/</span><br><span class="line">sending incremental file list</span><br><span class="line">etc/</span><br><span class="line">etc/aaa1111111111111</span><br><span class="line"></span><br><span class="line">sent 45,880 bytes  received 648 bytes  31,018.67 bytes/sec</span><br><span class="line">total size is 28,357,060  speedup is 609.46</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>上面演示了 rsync 会增量推送，接下来使用 scp 进行推送</li>
+<li>临时传输数据，使用 scp 即可<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# scp -r /etc 192.168.1.103:/tmp/</span><br><span class="line">....</span><br><span class="line">fstab                                          100%  465   687.7KB/s   00:00    </span><br><span class="line">crypttab                                       100%    0     0.0KB/s   00:00    </span><br><span class="line">mtab                                           100%    0     0.0KB/s   00:00    </span><br><span class="line">resolv.conf                                    100%   72   127.8KB/s   00:00    </span><br><span class="line">00_header                                      100% 8702    11.5MB/s   00:00    </span><br><span class="line">01_users                                       100%  232   483.5KB/s   00:00    </span><br><span class="line">10_linux                                       100%   11KB  13.0MB/s   00:00    </span><br><span class="line">20_linux_xen                                   100%   10KB  12.5MB/s   00:00    </span><br><span class="line">20_ppc_terminfo                                100% 2559     3.9MB/s   00:00    </span><br><span class="line">30_os-prober                                   100%   11KB  15.4MB/s   00:00    </span><br><span class="line">40_custom                                      100%  214   412.8KB/s   00:00    </span><br><span class="line">....</span><br><span class="line"></span><br><span class="line">👺 <span class="comment">### 会发现，虽然有重复文件，但是scp依旧会全量推送</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="4-3-守护进程模式（daemon）⭐🌟"><a href="#4-3-守护进程模式（daemon）⭐🌟" class="headerlink" title="4.3 守护进程模式（daemon）⭐🌟"></a>4.3 守护进程模式（daemon）⭐🌟</h2><h3 id="a）配置文件内容"><a href="#a）配置文件内容" class="headerlink" title="a）配置文件内容"></a>a）配置文件内容</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">###配置文件</span></span><br><span class="line">fake super = <span class="built_in">yes</span>  </span><br><span class="line">uid = rsync   </span><br><span class="line">gid = rsync   </span><br><span class="line">use <span class="built_in">chroot</span> = no   </span><br><span class="line">max connections = 2000</span><br><span class="line"><span class="built_in">timeout</span> = 600</span><br><span class="line">pid file = /var/run/rsyncd.pid</span><br><span class="line">lock file = /var/run/rsync.lock</span><br><span class="line"></span><br><span class="line"><span class="built_in">log</span> file = /var/log/rsyncd.log</span><br><span class="line">ignore errors</span><br><span class="line"><span class="built_in">read</span> only = <span class="literal">false</span></span><br><span class="line">list = <span class="literal">false</span></span><br><span class="line"><span class="comment">##hosts allow = 192.168.1.0/24</span></span><br><span class="line"><span class="comment">##hosts deny = 192.168.1.0/32</span></span><br><span class="line">auth <span class="built_in">users</span> = rsync_backup</span><br><span class="line">secrets file = /etc/rsync.password</span><br><span class="line"></span><br><span class="line"><span class="comment">#############          </span></span><br><span class="line">[data]</span><br><span class="line">comment = my rsync</span><br><span class="line">path = /data</span><br></pre></td></tr></table></figure>
+
+<h3 id="b）安装、部署"><a href="#b）安装、部署" class="headerlink" title="b）安装、部署"></a>b）安装、部署</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">01.# 安装</span><br><span class="line">[root@backup01 ~]# yum install rsync</span><br><span class="line">Loaded plugins: fastestmirror</span><br><span class="line">Loading mirror speeds from cached hostfile</span><br><span class="line"> * base: mirrors.aliyun.com</span><br><span class="line"> * extras: mirrors.aliyun.com</span><br><span class="line"> * updates: mirrors.aliyun.com</span><br><span class="line">Package rsync-3.1.2-12.el7_9.x86_64 already installed and latest version</span><br><span class="line">Nothing to <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">02.## 修改配置文件</span><br><span class="line">[root@backup01 ~]# <span class="built_in">cp</span> /etc/rsyncd.conf /etc/rsyncd.conf.bak</span><br><span class="line"></span><br><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /etc/rsyncd.conf</span><br><span class="line">fake super = <span class="built_in">yes</span>  </span><br><span class="line">uid = rsync   </span><br><span class="line">gid = rsync   </span><br><span class="line">use <span class="built_in">chroot</span> = no   </span><br><span class="line">max connections = 2000</span><br><span class="line"><span class="built_in">timeout</span> = 600</span><br><span class="line">pid file = /var/run/rsyncd.pid</span><br><span class="line">lock file = /var/run/rsync.lock</span><br><span class="line"><span class="built_in">log</span> file = /var/log/rsyncd.log</span><br><span class="line">ignore errors</span><br><span class="line"><span class="built_in">read</span> only = <span class="literal">false</span></span><br><span class="line">list = <span class="literal">false</span></span><br><span class="line"><span class="comment">##hosts allow = 192.168.1.0/24</span></span><br><span class="line"><span class="comment">###hosts deny = 192.168.1.0/32</span></span><br><span class="line">auth <span class="built_in">users</span> = rsync_backup</span><br><span class="line">secrets file = /etc/rsync.password</span><br><span class="line"><span class="comment">##############          </span></span><br><span class="line">[data]</span><br><span class="line">comment = my rsync</span><br><span class="line">path = /data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">03.## 部署一些配置</span><br><span class="line"><span class="comment">## 创建用户</span></span><br><span class="line">[root@backup01 ~]# <span class="built_in">id</span> rsync</span><br><span class="line"><span class="built_in">id</span>: rsync: no such user</span><br><span class="line">[root@backup01 ~]# useradd -s /sbin/nologin -M rsync</span><br><span class="line">[root@backup01 ~]# <span class="built_in">id</span> rsync</span><br><span class="line">uid=1000(rsync) gid=1000(rsync) <span class="built_in">groups</span>=1000(rsync)</span><br><span class="line"></span><br><span class="line"><span class="comment">## 创建验证密码文件，修改权限</span></span><br><span class="line">[root@backup01 ~]# <span class="built_in">echo</span> <span class="string">&#x27;rsync_backup:1&#x27;</span> &gt;/etc/rsync.password</span><br><span class="line">[root@backup01 ~]# <span class="built_in">chmod</span> 600 /etc/rsync.password </span><br><span class="line">[root@backup01 ~]# ll /etc/rsync.password </span><br><span class="line">-rw------- 1 root root 15 Mar  6 22:31 /etc/rsync.password</span><br><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /etc/rsync.password </span><br><span class="line">rsync_backup:1</span><br><span class="line"></span><br><span class="line"><span class="comment">## 创建备份目录，修改所有者和所属组</span></span><br><span class="line">[root@backup01 ~]# <span class="built_in">mkdir</span> /data</span><br><span class="line">[root@backup01 ~]# <span class="built_in">chown</span> -R rsync.rsync /data/</span><br><span class="line">[root@backup01 ~]# ll -d /data/</span><br><span class="line">drwxr-xr-x 2 rsync rsync 6 Mar  6 22:32 /data/</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="c）启动、开机自启"><a href="#c）启动、开机自启" class="headerlink" title="c）启动、开机自启"></a>c）启动、开机自启</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">01.## 启动、开机自启</span><br><span class="line">[root@backup01 ~]# systemctl start rsyncd</span><br><span class="line">[root@backup01 ~]# systemctl status rsyncd</span><br><span class="line">● rsyncd.service - fast remote file copy program daemon</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/rsyncd.service; disabled; vendor preset: disabled)</span><br><span class="line">   Active: active (running) since Wed 2024-03-06 22:34:55 CST; 1s ago</span><br><span class="line"> Main PID: 11541 (rsync)</span><br><span class="line">   CGroup: /system.slice/rsyncd.service</span><br><span class="line">           └─11541 /usr/bin/rsync --daemon --no-detach</span><br><span class="line"></span><br><span class="line">Mar 06 22:34:55 backup01 systemd[1]: Started fast remote file copy program daemon.</span><br><span class="line">[root@backup01 ~]# systemctl <span class="built_in">enable</span> rsyncd</span><br><span class="line">Created symlink from /etc/systemd/system/multi-user.target.wants/rsyncd.service to /usr/lib/systemd/system/rsyncd.service.</span><br></pre></td></tr></table></figure>
+
+<h3 id="d）验证（本地、远程）"><a href="#d）验证（本地、远程）" class="headerlink" title="d）验证（本地、远程）"></a>d）验证（本地、远程）</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">######### 登录验证   ############</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### ①. 这里使用本机进行验证</span></span><br><span class="line">[root@backup01 ~]# rsync -av  /etc/hostname  rsync_backup@192.168.1.100::data</span><br><span class="line">Password: </span><br><span class="line">sending incremental file list</span><br><span class="line">hostname</span><br><span class="line"></span><br><span class="line">sent 107 bytes  received 43 bytes  9.68 bytes/sec</span><br><span class="line">total size is 9  speedup is 0.06</span><br><span class="line"></span><br><span class="line">[root@backup01 ~]# ll /data/</span><br><span class="line">total 4</span><br><span class="line">-rw-r--r-- 1 rsync rsync 9 Mar  6 18:31 hostname</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### ②. 远程进行登录验证</span></span><br><span class="line">[root@nfs01 ~]# rsync -avz /etc/hosts rsync_backup@192.168.1.100::data</span><br><span class="line">Password: </span><br><span class="line">sending incremental file list</span><br><span class="line">hosts</span><br><span class="line"></span><br><span class="line">sent 140 bytes  received 43 bytes  122.00 bytes/sec</span><br><span class="line">total size is 158  speedup is 0.86</span><br><span class="line"></span><br><span class="line">[root@backup01 ~]# ll /data/</span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 rsync rsync 158 Jun  7  2013 hosts</span><br></pre></td></tr></table></figure>
+
+
+<h1 id="5-守护模式补充"><a href="#5-守护模式补充" class="headerlink" title="5. 守护模式补充"></a>5. 守护模式补充</h1><h2 id="5-1-客户端免密码登录"><a href="#5-1-客户端免密码登录" class="headerlink" title="5.1  客户端免密码登录"></a>5.1  客户端免密码登录</h2><blockquote>
+<p>只需要客户端将密码保存到本地即可</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">01. <span class="comment">### 客户端将密码写入空文件内（文件名自己定义）</span></span><br><span class="line">[root@nfs01 ~]# <span class="built_in">echo</span> <span class="string">&#x27;1&#x27;</span> &gt; /etc/rsync.client</span><br><span class="line"></span><br><span class="line">02. <span class="comment">### 修改权限</span></span><br><span class="line">[root@nfs01 ~]# <span class="built_in">chmod</span> 600 /etc/rsync.client </span><br><span class="line"></span><br><span class="line">03. <span class="comment">### 传输时使用 &#x27;--password-file&#x27; 参数指定密码文件</span></span><br><span class="line">[root@nfs01 ~]# rsync -avz etc.tar.gz rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">sending incremental file list</span><br><span class="line">etc.tar.gz</span><br><span class="line"></span><br><span class="line">sent 10,230,350 bytes  received 43 bytes  20,460,786.00 bytes/sec</span><br><span class="line">total size is 10,433,130  speedup is 1.02</span><br><span class="line"></span><br><span class="line">04. <span class="comment">### 服务端查看文件是否成功</span></span><br><span class="line">[root@backup01 ~]# ll /data/</span><br><span class="line">total 10200</span><br><span class="line">-rw-r--r-- 1 rsync rsync 10433130 Mar  7 17:15 etc.tar.gz</span><br><span class="line">-rw-r--r-- 1 rsync rsync        9 Mar  6 18:31 hostname</span><br><span class="line">-rw-r--r-- 1 rsync rsync      158 Jun  7  2013 hosts</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-2-访问控制-安全措施"><a href="#5-2-访问控制-安全措施" class="headerlink" title="5.2  访问控制-安全措施"></a>5.2  访问控制-安全措施</h2><ul>
+<li><p>hosts allow：只允许某个 ip 或网段访问</p>
+</li>
+<li><p>hosts deny：拒绝某个 ip 或网段访问</p>
+</li>
+<li><p>案例：只允许 10.0.0.0&#x2F;24 网段访问</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# grep <span class="string">&#x27;hosts allow&#x27;</span> /etc/rsyncd.conf</span><br><span class="line">hosts allow = 10.0.0.0/24</span><br><span class="line"></span><br><span class="line">[root@backup01 ~]# systemctl restart rsyncd</span><br><span class="line"></span><br><span class="line"><span class="comment">### 此时客户端访问，会直接报错</span></span><br><span class="line">[root@nfs01 ~]# rsync -avz etc.tar.gz rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">@ERROR: Unknown module <span class="string">&#x27;data&#x27;</span></span><br><span class="line">rsync error: error starting client-server protocol (code 5) at main.c(1656) [sender=3.1.2]</span><br><span class="line"></span><br><span class="line"><span class="comment">####改回允许局域网网段访问</span></span><br><span class="line">[root@backup01 ~]# grep <span class="string">&#x27;hosts allow&#x27;</span> /etc/rsyncd.conf</span><br><span class="line">hosts allow = 192.168.1.0/24</span><br><span class="line"></span><br><span class="line">[root@backup01 ~]# systemctl restart rsyncd</span><br><span class="line"></span><br><span class="line"><span class="comment">## 此时正常访问</span></span><br><span class="line">[root@nfs01 ~]# rsync -avz etc.tar.gz rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">sending incremental file list</span><br><span class="line"></span><br><span class="line">sent 54 bytes  received 20 bytes  148.00 bytes/sec</span><br><span class="line">total size is 10,433,130  speedup is 140,988.24</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="6-Rsync-选项"><a href="#6-Rsync-选项" class="headerlink" title="6. Rsync 选项"></a>6. Rsync 选项</h1><table>
+<thead>
+<tr>
+<th>rsync 选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-a</code> <br>包含了[-rlptogD]</td>
+<td>-r：递归复制 <br>-l：复制软链接<br>-p：保持权限不变<br>-t：保持文件时间不变<br>-o：所有者不变<br>-g：所属组不变<br>-D：–devices –specials  设备与特殊文件，保持设备文件信息</td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>显示传输过程详细信息</td>
+</tr>
+<tr>
+<td><code>-z</code></td>
+<td>传输数据时压缩<br>（一般公网传输使用，会自动解压缩）<br>–compress-level&#x3D;num：可按级别压缩</td>
+</tr>
+<tr>
+<td>-P</td>
+<td>–progress  显示同步的过程及传输时的进度等信息（一般不与-z 使用）</td>
+</tr>
+<tr>
+<td><code>--bwlimit</code></td>
+<td>限速</td>
+</tr>
+<tr>
+<td>–exclude<br>–exclude-from</td>
+<td>排除</td>
+</tr>
+<tr>
+<td>–delete</td>
+<td>一般用于实时同步，备份时不使用<br>使双方数据一致，多余的文件全部删除</td>
+</tr>
+</tbody></table>
+<h2 id="6-1-P-更加详细的信息"><a href="#6-1-P-更加详细的信息" class="headerlink" title="6.1  -P 更加详细的信息"></a>6.1  <code>-P</code> 更加详细的信息</h2><blockquote>
+<p>比 <code>-v</code> 输出的信息更加详细，显示传输速度与进度等</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 tmp]# rsync -av -P . rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">sending incremental file list</span><br><span class="line">./</span><br><span class="line">100m </span><br><span class="line">    104,857,600 100%   58.77MB/s    0:00:01 (xfr#1, to-chk=5/7)</span><br><span class="line"></span><br><span class="line">sent 104,883,455 bytes  received 70 bytes  41,953,410.00 bytes/sec</span><br><span class="line">total size is 104,857,600  speedup is 1.00</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-2-bwlimit-限速"><a href="#6-2-bwlimit-限速" class="headerlink" title="6.2 --bwlimit 限速"></a>6.2 <code>--bwlimit</code> 限速</h2><blockquote>
+<p>公网传输时为了不占用太多宽带，一般会限速传输</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 限速到100kb/s</span></span><br><span class="line">[root@nfs01 tmp]# rsync -avP --bwlimit=100kb . rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">sending incremental file list</span><br><span class="line">./</span><br><span class="line">100m-v2</span><br><span class="line">        425,984   0%  103.31kB/s    0:16:50  </span><br></pre></td></tr></table></figure>
+
+<h2 id="6-3-排除指定文件"><a href="#6-3-排除指定文件" class="headerlink" title="6.3 排除指定文件"></a>6.3 排除指定文件</h2><blockquote>
+<p>传输时可以指定哪些文件不进行备份【–exclude】</p>
+</blockquote>
+<ul>
+<li><ol>
+<li><h2 id="创建一些文件"><a href="#创建一些文件" class="headerlink" title="创建一些文件"></a>创建一些文件</h2></li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 tmp]# <span class="built_in">mkdir</span> xue</span><br><span class="line">[root@nfs01 tmp]# <span class="built_in">cd</span> xue/</span><br><span class="line">[root@nfs01 xue]# <span class="built_in">touch</span> xuexi-&#123;1..10&#125;.txt</span><br><span class="line">[root@nfs01 xue]# ll</span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-10.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-1.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-2.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-3.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-4.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-5.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-6.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-7.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-8.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-9.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><ol start="2">
+<li><h3 id="传输时排除-xuexi-【1-2-3】文件"><a href="#传输时排除-xuexi-【1-2-3】文件" class="headerlink" title="传输时排除 xuexi-【1,2,3】文件"></a>传输时排除 xuexi-【1,2,3】文件</h3></li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 xue]# rsync -avz . rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client --exclude=xuexi-&#123;1,2,3&#125;.txt</span><br><span class="line">sending incremental file list</span><br><span class="line">./</span><br><span class="line">xuexi-10.txt</span><br><span class="line">xuexi-4.txt</span><br><span class="line">xuexi-5.txt</span><br><span class="line">xuexi-6.txt</span><br><span class="line">xuexi-7.txt</span><br><span class="line">xuexi-8.txt</span><br><span class="line">xuexi-9.txt</span><br><span class="line"></span><br><span class="line">sent 424 bytes  received 160 bytes  1,168.00 bytes/sec</span><br><span class="line">total size is 0  speedup is 0.00</span><br><span class="line"></span><br><span class="line">[root@backup01 data]# ll</span><br><span class="line">total 112600</span><br><span class="line">-rw-r--r-- 1 rsync rsync 104857600 Mar  7 17:46 100m</span><br><span class="line">-rw-r--r-- 1 rsync rsync  10433130 Mar  7 17:15 etc.tar.gz</span><br><span class="line">-rw-r--r-- 1 rsync rsync         9 Mar  6 18:31 hostname</span><br><span class="line">-rw-r--r-- 1 rsync rsync       158 Jun  7  2013 hosts</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-10.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-4.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-5.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-6.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-7.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-8.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync         0 Mar  7 17:54 xuexi-9.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><ol start="3">
+<li><h3 id="也可以排除-xuexi-1-3-txt-范围内文件"><a href="#也可以排除-xuexi-1-3-txt-范围内文件" class="headerlink" title="也可以排除 xuexi-{1.. 3}.txt 范围内文件"></a>也可以排除 xuexi-{1.. 3}.txt 范围内文件</h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 xue]# rsync -avz . rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client --exclude=xuexi-&#123;1..3&#125;.txt</span><br><span class="line">sending incremental file list</span><br><span class="line">./</span><br><span class="line">xuexi-10.txt</span><br><span class="line">xuexi-4.txt</span><br><span class="line">xuexi-5.txt</span><br><span class="line">xuexi-6.txt</span><br><span class="line">xuexi-7.txt</span><br><span class="line">xuexi-8.txt</span><br><span class="line">xuexi-9.txt</span><br><span class="line"></span><br><span class="line">sent 424 bytes  received 160 bytes  1,168.00 bytes/sec</span><br><span class="line">total size is 0  speedup is 0.00</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="6-4-delete-数据一致"><a href="#6-4-delete-数据一致" class="headerlink" title="6.4  -delete  数据一致"></a>6.4  <code>-delete</code>  数据一致</h2><blockquote>
+<p>👺 注意：该选项会强制使双方数据一致，服务端多余的数据会直接删除<br>    一般用于实时同步，备份时一般情况下不要使用</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 先查看服务端的数据有哪些</span></span></span><br><span class="line">[root@backup01 data]# ls</span><br><span class="line">100m  etc.tar.gz  hostname  hosts  </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 查看客户端要推送的数据</span></span> </span><br><span class="line">[root@nfs01 xue]# ll</span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-10.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-1.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-2.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-3.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-4.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-5.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-6.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-7.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-8.txt</span><br><span class="line">-rw-r--r-- 1 root root 0 Mar  7 17:54 xuexi-9.txt</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">####  会发现他会删除服务端上的文件，再传输客户端上的数据</span></span></span><br><span class="line">[root@nfs01 xue]# rsync -avz --delete  . rsync_backup@192.168.1.100::data --password-file=/etc/rsync.client </span><br><span class="line">sending incremental file list</span><br><span class="line">deleting .font-unix/</span><br><span class="line">deleting .XIM-unix/</span><br><span class="line">deleting .X11-unix/</span><br><span class="line">deleting .Test-unix/</span><br><span class="line">deleting .ICE-unix/</span><br><span class="line">deleting hosts</span><br><span class="line">deleting hostname</span><br><span class="line">deleting etc.tar.gz</span><br><span class="line">deleting 100m</span><br><span class="line">./</span><br><span class="line">xuexi-1.txt</span><br><span class="line">xuexi-10.txt</span><br><span class="line">xuexi-2.txt</span><br><span class="line">xuexi-3.txt</span><br><span class="line">xuexi-4.txt</span><br><span class="line">xuexi-5.txt</span><br><span class="line">xuexi-6.txt</span><br><span class="line">xuexi-7.txt</span><br><span class="line">xuexi-8.txt</span><br><span class="line">xuexi-9.txt</span><br><span class="line"></span><br><span class="line">sent 584 bytes  received 332 bytes  1,832.00 bytes/sec</span><br><span class="line">total size is 0  speedup is 0.00</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">## 此时查看服务端的数据，会发现只剩下xuexi-*的文件</span></span></span><br><span class="line">[root@backup01 data]# ll</span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-10.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-1.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-2.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-3.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-4.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-5.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-6.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-7.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-8.txt</span><br><span class="line">-rw-r--r-- 1 rsync rsync 0 Mar  7 17:54 xuexi-9.txt</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+<h1 id="7-项目案例：定时备份"><a href="#7-项目案例：定时备份" class="headerlink" title="7. 项目案例：定时备份"></a>7. 项目案例：定时备份</h1><h2 id="7-1-项目背景"><a href="#7-1-项目背景" class="headerlink" title="7.1 项目背景"></a>7.1 项目背景</h2><ul>
+<li><p>可能源于老大的一句话：你去做一下备份</p>
+</li>
+<li><p>接下来需要你自己思考：怎么备份、备份什么内容？怎么统一存放备份，备份保存多长时间，都是什么系统、以及系统什么版本。</p>
+</li>
+<li><p>备份什么？</p>
+<ul>
+<li>数据库、存储</li>
+<li>配置文件</li>
+<li>脚本、代码…</li>
+<li>网站代码</li>
+<li>日志等等</li>
+<li>…..</li>
+</ul>
+</li>
+<li><p>怎么备份？</p>
+<ul>
+<li>tar 打包压缩+定时任务</li>
+</ul>
+</li>
+<li><p>怎么收集存放备份？</p>
+<ul>
+<li>rsync 服务收集备份（客户端推送备份到 rsync 服务端）</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-2-项目流程"><a href="#7-2-项目流程" class="headerlink" title="7.2 项目流程"></a>7.2 项目流程</h2><h3 id="a）环境准备"><a href="#a）环境准备" class="headerlink" title="a）环境准备"></a>a）环境准备</h3><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>主机</th>
+<th>运行服务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>存放备份</td>
+<td>backup01</td>
+<td>rsync 服务端</td>
+</tr>
+<tr>
+<td>生成备份</td>
+<td>nfs01</td>
+<td>rsync 客户端、其他服务</td>
+</tr>
+<tr>
+<td>生成备份</td>
+<td>web01</td>
+<td>rsync 客户端、其他服务</td>
+</tr>
+<tr>
+<td>……</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="b）项目步骤"><a href="#b）项目步骤" class="headerlink" title="b）项目步骤"></a>b）项目步骤</h3><blockquote>
+<p>目前这里只列出了操作步骤，工作时还会有沟通、开会、定期汇报等步骤。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>步骤说明</th>
+<th>详细内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>创建 rsync 服务端并调试</td>
+<td>配置服务端</td>
+</tr>
+<tr>
+<td>rsync 客户端节点配置</td>
+<td>（1）备份<br>（2）推送<br>（3）清理</td>
+</tr>
+<tr>
+<td>其他节点配置定时任务</td>
+<td>定时运行备份任务</td>
+</tr>
+<tr>
+<td>备份服务器检查并发送结果邮件</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="c）服务端配置及调试"><a href="#c）服务端配置及调试" class="headerlink" title="c）服务端配置及调试"></a>c）服务端配置及调试</h3><ol>
+<li><h3 id="修改服务端配置文件"><a href="#修改服务端配置文件" class="headerlink" title="修改服务端配置文件"></a>修改服务端配置文件</h3></li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /etc/rsyncd.conf</span><br><span class="line">fake super = <span class="built_in">yes</span>  </span><br><span class="line">uid = rsync   </span><br><span class="line">gid = rsync   </span><br><span class="line">use <span class="built_in">chroot</span> = no   </span><br><span class="line">max connections = 2000</span><br><span class="line"><span class="built_in">timeout</span> = 600</span><br><span class="line">pid file = /var/run/rsyncd.pid</span><br><span class="line">lock file = /var/run/rsync.lock</span><br><span class="line"></span><br><span class="line"><span class="built_in">log</span> file = /var/log/rsyncd.log</span><br><span class="line">ignore errors</span><br><span class="line"><span class="built_in">read</span> only = <span class="literal">false</span></span><br><span class="line">list = <span class="literal">false</span></span><br><span class="line">hosts allow = 192.168.1.0/24</span><br><span class="line"><span class="comment">###hosts deny = 192.168.1.0/32</span></span><br><span class="line">auth <span class="built_in">users</span> = rsync_backup</span><br><span class="line">secrets file = /etc/rsync.password</span><br><span class="line"></span><br><span class="line"><span class="comment">#############          </span></span><br><span class="line">[data]</span><br><span class="line">comment = my rsync</span><br><span class="line">path = /data</span><br><span class="line"></span><br><span class="line">[backup]   <span class="comment">##### 添加新的模块</span></span><br><span class="line">comment = shouji backups</span><br><span class="line">path = /backup </span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>创建共享目录并修改权限<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">mkdir</span> -p /backup</span><br><span class="line">[root@backup01 ~]# <span class="built_in">chown</span> -R rsync.rsync /backup</span><br><span class="line">[root@backup01 ~]# ll -d /backup/</span><br><span class="line">drwxr-xr-x 2 rsync rsync 6 Mar  8 13:50 /backup/</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="d）客户端配置"><a href="#d）客户端配置" class="headerlink" title="d）客户端配置"></a>d）客户端配置</h3><blockquote>
+<p>01.创建备份脚本</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 ~]# <span class="built_in">cat</span> /server/scripts/bak_conf.sh </span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#author: lsq 2024-03-08</span></span><br><span class="line"><span class="comment">#desc: 备份的相关配置-客户端</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##01.变量</span></span><br><span class="line">ip=`hostname -I | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>`</span><br><span class="line">backup_dir=/backup/<span class="variable">$&#123;ip&#125;</span></span><br><span class="line">time=`<span class="built_in">date</span> +%F_%w`</span><br><span class="line">backup_file=conf-<span class="variable">$&#123;time&#125;</span>.tar.gz</span><br><span class="line">backup_server=192.168.1.100</span><br><span class="line"></span><br><span class="line"><span class="comment">##02.tar打包压缩</span></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="variable">$&#123;backup_dir&#125;</span></span><br><span class="line">tar -zcf <span class="variable">$&#123;backup_dir&#125;</span>/<span class="variable">$&#123;backup_file&#125;</span>  /etc/</span><br><span class="line"></span><br><span class="line"><span class="comment">##03.推送到服务端</span></span><br><span class="line">rsync -a <span class="variable">$&#123;backup_dir&#125;</span>  rsync_backup@<span class="variable">$&#123;backup_server&#125;</span>::backup --password-file=/etc/rsync.client</span><br><span class="line"></span><br><span class="line"><span class="comment">##04.删除旧备份-7天前的</span></span><br><span class="line">find <span class="variable">$&#123;backup_dir&#125;</span> -<span class="built_in">type</span> f -name  <span class="string">&quot;*.tar.gz&quot;</span>  -mtime +7 | xargs <span class="built_in">rm</span> -f</span><br></pre></td></tr></table></figure>
+
+
+<blockquote>
+<ol start="2">
+<li>创建定时任务，每分钟执行一次定时任务</li>
+</ol>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 ~]# vim /var/spool/cron/root</span><br><span class="line">* * * * *  sh /server/scripts/bak_conf.sh  &amp;&gt;&gt;/var/log/backup.log</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="e）其他节点配置客户端"><a href="#e）其他节点配置客户端" class="headerlink" title="e）其他节点配置客户端"></a>e）其他节点配置客户端</h3><blockquote>
+<p>这里使用 web01 服务器</p>
+<h3 id="在配置好的客户端上复制备份脚本、crontab-文件、rsync-验证密码文件到新的客户端"><a href="#在配置好的客户端上复制备份脚本、crontab-文件、rsync-验证密码文件到新的客户端" class="headerlink" title="在配置好的客户端上复制备份脚本、crontab 文件、rsync 验证密码文件到新的客户端"></a>在配置好的客户端上复制备份脚本、crontab 文件、rsync 验证密码文件到新的客户端</h3></blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 01.备份脚本</span></span><br><span class="line">scp  /server/scripts/bak_conf.sh root@192.168.1.20:/server/scripts/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 02.crontab定时任务文件</span></span><br><span class="line">scp /var/spool/cron/root 192.168.1.20:/var/spool/cron/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 03. rsync密码文件</span></span><br><span class="line">scp /etc/rsync.client 192.168.1.20:/etc/</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>等待一分钟后，crontab 自动运行备份脚本</li>
+<li>在服务端查看是否有新内容</li>
+<li>会发现已经有了 <code>192.168.1.20</code> 新 ip 出现<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# tree /backup/</span><br><span class="line">/backup/</span><br><span class="line">├── 192.168.1.103</span><br><span class="line">│   └── conf-2024-03-08_5.tar.gz</span><br><span class="line">├── 192.168.1.20</span><br><span class="line">│   └── conf-2024-03-08_5.tar.gz</span><br><span class="line">└── hostname</span><br><span class="line"></span><br><span class="line">2 directories, 3 files</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="f）备份服务器检查及邮件"><a href="#f）备份服务器检查及邮件" class="headerlink" title="f）备份服务器检查及邮件"></a>f）备份服务器检查及邮件</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /server/scripts/check.sh </span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">##desc: 检查备份、清理旧备份</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##01.清理旧备份</span></span><br><span class="line">find /backup -<span class="built_in">type</span> f -name <span class="string">&quot;*.tar.gz&quot;</span> -mtime +180 | xargs <span class="built_in">rm</span> -f</span><br><span class="line"></span><br><span class="line"><span class="comment">##02.统计备份结果</span></span><br><span class="line">find /backup -<span class="built_in">type</span> f -name <span class="string">&quot;*.tar.gz&quot;</span> |\</span><br><span class="line">xargs <span class="built_in">ls</span> -lhd |\</span><br><span class="line">awk  -F<span class="string">&#x27;[ /]+&#x27;</span> <span class="string">&#x27;BEGIN&#123;print &quot;IP&quot;,&quot;压缩文件&quot;,&quot;大小&quot;&#125; &#123;print $(NF-1),$NF,$5&#125;&#x27;</span> | column -t &gt; /server/scripts/result.txt</span><br><span class="line"></span><br><span class="line"><span class="comment">##03.发送邮件</span></span><br><span class="line">mail -s <span class="string">&quot;每日备份结果&quot;</span> 2659612760@qq.com &lt;/server/scripts/result.txt</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看 result.txt 内容<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /server/scripts/result.txt </span><br><span class="line">IP             压缩文件                   大小</span><br><span class="line">192.168.1.103  conf-2024-03-08_5.tar.gz  10M</span><br><span class="line">192.168.1.20   conf-2024-03-08_5.tar.gz  10M</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="g）增加文件校验功能"><a href="#g）增加文件校验功能" class="headerlink" title="g）增加文件校验功能"></a>g）增加文件校验功能</h3><blockquote>
+<p>传输过程中，文件可能会损坏，所以需要进行 md5 检验</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">##给/etc/下面的文件创建md5并保存至指定文件</span></span><br><span class="line">find /etc/ -<span class="built_in">type</span> f |xargs  <span class="built_in">md5sum</span> &gt;etc-all.md5</span><br><span class="line"></span><br><span class="line"><span class="comment">##校验md5</span></span><br><span class="line"><span class="built_in">md5sum</span> -c etc-all.md5 </span><br><span class="line"></span><br><span class="line"><span class="comment">## 将一个文件的内容修改：比如在rsyncd.conf里增加一个#号</span></span><br><span class="line"><span class="built_in">md5sum</span> -c etc-all.md5 </span><br><span class="line">....</span><br><span class="line">/etc/rsyncd.conf: FAILED</span><br><span class="line">/etc/rsync.client: OK</span><br><span class="line"><span class="built_in">md5sum</span>: WARNING: 1 computed checksum did NOT match</span><br><span class="line"></span><br><span class="line"><span class="comment">## 如果文件过多，不太好看，可以使用--quiet参数，只显示校验失败的</span></span><br><span class="line">[root@nfs01 ~]# <span class="built_in">md5sum</span> -c --quiet etc-all.md5 </span><br><span class="line">/etc/rsyncd.conf: FAILED</span><br><span class="line"><span class="built_in">md5sum</span>: WARNING: 1 computed checksum did NOT match</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>具体应用</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">##客户端备份完成的时候，为备份文件创建md5校验文件</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>我们可以做一个安全防护措施（知识补充）</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">###给一些命令和固定配置文件，设置md5，定期任务进行校验，以防止病毒修改文件</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol>
+<li><p>客户端增加一个生成 md5 的命令即可【 #2 .5】</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@nfs01 ~]# <span class="built_in">cat</span> /server/scripts/bak_conf.sh </span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#author: lsq 2024-03-08</span></span><br><span class="line"><span class="comment">#desc: 备份的相关配置-客户端</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">##01.变量</span></span><br><span class="line">ip=`hostname -I | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>`</span><br><span class="line">backup_dir=/backup/<span class="variable">$&#123;ip&#125;</span></span><br><span class="line">time=`<span class="built_in">date</span> +%F_%w`</span><br><span class="line">backup_file=conf-<span class="variable">$&#123;time&#125;</span>.tar.gz</span><br><span class="line">backup_server=192.168.1.100</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">##02.tar打包压缩</span></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="variable">$&#123;backup_dir&#125;</span></span><br><span class="line">tar -zcf <span class="variable">$&#123;backup_dir&#125;</span>/<span class="variable">$&#123;backup_file&#125;</span>  /etc/</span><br><span class="line"></span><br><span class="line"><span class="comment">##2.5 创建md5</span></span><br><span class="line">find <span class="variable">$&#123;backup_dir&#125;</span>/<span class="variable">$&#123;backup_file&#125;</span> |xargs <span class="built_in">md5sum</span> &gt;<span class="variable">$&#123;backup_dir&#125;</span>/fingerprint.md5</span><br><span class="line"></span><br><span class="line"><span class="comment">##03.推送到服务端</span></span><br><span class="line">rsync -a <span class="variable">$&#123;backup_dir&#125;</span>  rsync_backup@<span class="variable">$&#123;backup_server&#125;</span>::backup --password-file=/etc/rsync.client</span><br><span class="line"></span><br><span class="line"><span class="comment">##04.删除旧备份-7天前的</span></span><br><span class="line">find <span class="variable">$&#123;backup_dir&#125;</span> -<span class="built_in">type</span> f -name  <span class="string">&quot;*.tar.gz&quot;</span>  -mtime +7 | xargs <span class="built_in">rm</span> -f</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>等待定时任务执行后，查看客户端和服务端是不是都有了 md5 文件</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#### 客户端</span></span><br><span class="line">[root@nfs01 ~]# ll /backup/192.168.1.103/</span><br><span class="line">-rw-r--r-- 1 root root       81 Mar  9 15:58 fingerprint.md5</span><br><span class="line"></span><br><span class="line"><span class="comment">### 服务端</span></span><br><span class="line">[root@backup01 ~]# ll /backup/192.168.1.103/</span><br><span class="line">-rw-r--r-- 1 rsync rsync       81 Mar  9 15:59 fingerprint.md5</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务端只是有文件还不行，还需要进行校验，否则不知道是否发生了改变</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /server/scripts/check.sh </span><br><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">##desc: 检查备份、清理旧备份</span></span><br><span class="line"><span class="comment">###0. 变量</span></span><br><span class="line">result_file=/server/scripts/result.txt</span><br><span class="line"><span class="comment">##01.清理旧备份</span></span><br><span class="line">find /backup -<span class="built_in">type</span> f -name <span class="string">&quot;*.tar.gz&quot;</span> -mtime +180 | xargs <span class="built_in">rm</span> -f</span><br><span class="line"></span><br><span class="line"><span class="comment">##02.统计备份结果</span></span><br><span class="line">find /backup -<span class="built_in">type</span> f -name <span class="string">&quot;*.tar.gz&quot;</span> |\</span><br><span class="line">xargs <span class="built_in">ls</span> -lhd |\</span><br><span class="line">awk  -F<span class="string">&#x27;[ /]+&#x27;</span> <span class="string">&#x27;BEGIN&#123;print &quot;IP&quot;,&quot;压缩&quot;,&quot;大小&quot;&#125; &#123;print $(NF-1),$NF,$5&#125;&#x27;</span> | column -t &gt;<span class="variable">$result_file</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##2.5 校验md5</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;下面是md5校验结果&quot;</span> &gt;&gt;<span class="variable">$result_file</span></span><br><span class="line">find /backup/  -name <span class="string">&quot;fingerprint.md5&quot;</span> | xargs <span class="built_in">md5sum</span> -c &gt;&gt;<span class="variable">$result_file</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##03.发送邮件</span></span><br><span class="line">mail -s <span class="string">&quot;每日备份结果&quot;</span> 2659612760@qq.com &lt;<span class="variable">$result_file</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@backup01 ~]# <span class="built_in">cat</span> /server/scripts/result.txt </span><br><span class="line">IP             压缩                      大小</span><br><span class="line">192.168.1.103  conf-2024-03-08_5.tar.gz  10M</span><br><span class="line">192.168.1.103  conf-2024-03-09_6.tar.gz  10M</span><br><span class="line">192.168.1.20   conf-2024-03-08_5.tar.gz  10M</span><br><span class="line">192.168.1.20   conf-2024-03-09_6.tar.gz  10M</span><br><span class="line">下面是md5校验结果</span><br><span class="line">/backup/192.168.1.103/conf-2024-03-09_6.tar.gz: OK</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>👺🌟：该脚本还是有问题，再说…..</p>
+</blockquote>
+<h2 id="7-3-项目总结"><a href="#7-3-项目总结" class="headerlink" title="7.3  项目总结"></a>7.3  项目总结</h2><ul>
+<li>目的：对整个网站的核心数据进行备份</li>
+<li>使用到的技术：<ul>
+<li>rsync 备份：将打包好的备份文件推送到服务端</li>
+<li>定时任务：定时运行推送命令</li>
+<li>md5sum：文件校验</li>
+<li>邮件</li>
+<li>shell 脚本：三剑客、find、tar</li>
+</ul>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://mettafy.github.io">Metta</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://mettafy.github.io/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/01-Rsync%E5%A4%87%E4%BB%BD/">https://mettafy.github.io/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/01-Rsync%E5%A4%87%E4%BB%BD/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://mettafy.github.io" target="_blank">DevOps</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%96%87%E6%A1%A3/">文档</a><a class="post-meta__tags" href="/tags/%E5%9F%BA%E7%A1%80/">基础</a></div><div class="post_share"><div class="social-share" data-image="/img/touxiang.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/02-NFS%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/" title="NFS存储"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">NFS存储</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/07/29/Linux%E5%9F%BA%E7%A1%80/Linux%E5%9F%BA%E7%A1%80/" title="Linux基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-30</div><div class="title">Linux基础</div></div></a></div><div><a href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/02-NFS%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/" title="NFS存储"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-30</div><div class="title">NFS存储</div></div></a></div><div><a href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1/Openssh/" title="OpenSSH远程服务"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-30</div><div class="title">OpenSSH远程服务</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/touxiang.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Metta</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Mettafy/mettafy.github.io"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.</span> <span class="toc-text">0. 配置文件详解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E5%A4%87%E4%BB%BD%E6%9C%8D%E5%8A%A1%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">1.   备份服务概述</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Rsync-%E4%BC%81%E4%B8%9A%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">3.</span> <span class="toc-text">2.  Rsync 企业应用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E6%8E%A8%E9%80%81%E4%B8%8E%E6%8B%89%E5%8F%96%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">4.</span> <span class="toc-text">3. 推送与拉取的区别</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%88%E4%BD%BF%E7%94%A8%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">4.  应用场景（使用模式）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E6%9C%AC%E5%9C%B0%E6%A8%A1%E5%BC%8F%EF%BC%88%E4%B8%8D%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">4.1  本地模式（不推荐）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E8%BF%9C%E7%A8%8B%E6%A8%A1%E5%BC%8F%E2%AD%90"><span class="toc-number">5.2.</span> <span class="toc-text">4.2 远程模式⭐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B%E6%A8%A1%E5%BC%8F%EF%BC%88daemon%EF%BC%89%E2%AD%90%F0%9F%8C%9F"><span class="toc-number">5.3.</span> <span class="toc-text">4.3 守护进程模式（daemon）⭐🌟</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#a%EF%BC%89%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9"><span class="toc-number">5.3.1.</span> <span class="toc-text">a）配置文件内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#b%EF%BC%89%E5%AE%89%E8%A3%85%E3%80%81%E9%83%A8%E7%BD%B2"><span class="toc-number">5.3.2.</span> <span class="toc-text">b）安装、部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c%EF%BC%89%E5%90%AF%E5%8A%A8%E3%80%81%E5%BC%80%E6%9C%BA%E8%87%AA%E5%90%AF"><span class="toc-number">5.3.3.</span> <span class="toc-text">c）启动、开机自启</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#d%EF%BC%89%E9%AA%8C%E8%AF%81%EF%BC%88%E6%9C%AC%E5%9C%B0%E3%80%81%E8%BF%9C%E7%A8%8B%EF%BC%89"><span class="toc-number">5.3.4.</span> <span class="toc-text">d）验证（本地、远程）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-%E5%AE%88%E6%8A%A4%E6%A8%A1%E5%BC%8F%E8%A1%A5%E5%85%85"><span class="toc-number">6.</span> <span class="toc-text">5. 守护模式补充</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%85%8D%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95"><span class="toc-number">6.1.</span> <span class="toc-text">5.1  客户端免密码登录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6-%E5%AE%89%E5%85%A8%E6%8E%AA%E6%96%BD"><span class="toc-number">6.2.</span> <span class="toc-text">5.2  访问控制-安全措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-Rsync-%E9%80%89%E9%A1%B9"><span class="toc-number">7.</span> <span class="toc-text">6. Rsync 选项</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-P-%E6%9B%B4%E5%8A%A0%E8%AF%A6%E7%BB%86%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-number">7.1.</span> <span class="toc-text">6.1  -P 更加详细的信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-bwlimit-%E9%99%90%E9%80%9F"><span class="toc-number">7.2.</span> <span class="toc-text">6.2 --bwlimit 限速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E6%8E%92%E9%99%A4%E6%8C%87%E5%AE%9A%E6%96%87%E4%BB%B6"><span class="toc-number">7.3.</span> <span class="toc-text">6.3 排除指定文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%BA%9B%E6%96%87%E4%BB%B6"><span class="toc-number">7.4.</span> <span class="toc-text">创建一些文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E8%BE%93%E6%97%B6%E6%8E%92%E9%99%A4-xuexi-%E3%80%901-2-3%E3%80%91%E6%96%87%E4%BB%B6"><span class="toc-number">7.4.1.</span> <span class="toc-text">传输时排除 xuexi-【1,2,3】文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B9%9F%E5%8F%AF%E4%BB%A5%E6%8E%92%E9%99%A4-xuexi-1-3-txt-%E8%8C%83%E5%9B%B4%E5%86%85%E6%96%87%E4%BB%B6"><span class="toc-number">7.4.2.</span> <span class="toc-text">也可以排除 xuexi-{1.. 3}.txt 范围内文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-delete-%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4"><span class="toc-number">7.5.</span> <span class="toc-text">6.4  -delete  数据一致</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#7-%E9%A1%B9%E7%9B%AE%E6%A1%88%E4%BE%8B%EF%BC%9A%E5%AE%9A%E6%97%B6%E5%A4%87%E4%BB%BD"><span class="toc-number">8.</span> <span class="toc-text">7. 项目案例：定时备份</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF"><span class="toc-number">8.1.</span> <span class="toc-text">7.1 项目背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-%E9%A1%B9%E7%9B%AE%E6%B5%81%E7%A8%8B"><span class="toc-number">8.2.</span> <span class="toc-text">7.2 项目流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#a%EF%BC%89%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="toc-number">8.2.1.</span> <span class="toc-text">a）环境准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#b%EF%BC%89%E9%A1%B9%E7%9B%AE%E6%AD%A5%E9%AA%A4"><span class="toc-number">8.2.2.</span> <span class="toc-text">b）项目步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c%EF%BC%89%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE%E5%8F%8A%E8%B0%83%E8%AF%95"><span class="toc-number">8.2.3.</span> <span class="toc-text">c）服务端配置及调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E6%9C%8D%E5%8A%A1%E7%AB%AF%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">8.2.4.</span> <span class="toc-text">修改服务端配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#d%EF%BC%89%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE"><span class="toc-number">8.2.5.</span> <span class="toc-text">d）客户端配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#e%EF%BC%89%E5%85%B6%E4%BB%96%E8%8A%82%E7%82%B9%E9%85%8D%E7%BD%AE%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">8.2.6.</span> <span class="toc-text">e）其他节点配置客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E9%85%8D%E7%BD%AE%E5%A5%BD%E7%9A%84%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8A%E5%A4%8D%E5%88%B6%E5%A4%87%E4%BB%BD%E8%84%9A%E6%9C%AC%E3%80%81crontab-%E6%96%87%E4%BB%B6%E3%80%81rsync-%E9%AA%8C%E8%AF%81%E5%AF%86%E7%A0%81%E6%96%87%E4%BB%B6%E5%88%B0%E6%96%B0%E7%9A%84%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">8.2.7.</span> <span class="toc-text">在配置好的客户端上复制备份脚本、crontab 文件、rsync 验证密码文件到新的客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#f%EF%BC%89%E5%A4%87%E4%BB%BD%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%A3%80%E6%9F%A5%E5%8F%8A%E9%82%AE%E4%BB%B6"><span class="toc-number">8.2.8.</span> <span class="toc-text">f）备份服务器检查及邮件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#g%EF%BC%89%E5%A2%9E%E5%8A%A0%E6%96%87%E4%BB%B6%E6%A0%A1%E9%AA%8C%E5%8A%9F%E8%83%BD"><span class="toc-number">8.2.9.</span> <span class="toc-text">g）增加文件校验功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E9%A1%B9%E7%9B%AE%E6%80%BB%E7%BB%93"><span class="toc-number">8.3.</span> <span class="toc-text">7.3  项目总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/01-Rsync%E5%A4%87%E4%BB%BD/" title="Rsync备份服务">Rsync备份服务</a><time datetime="2024-07-29T16:10:00.000Z" title="发表于 2024-07-30 00:10:00">2024-07-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E5%A4%87%E4%BB%BD%E4%B8%8E%E5%AD%98%E5%82%A8/02-NFS%E5%AD%98%E5%82%A8%E6%9C%8D%E5%8A%A1/" title="NFS存储">NFS存储</a><time datetime="2024-07-29T16:10:00.000Z" title="发表于 2024-07-30 00:10:00">2024-07-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/29/%E7%BB%BC%E5%90%88%E6%9E%B6%E6%9E%84/%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1/Openssh/" title="OpenSSH远程服务">OpenSSH远程服务</a><time datetime="2024-07-29T16:00:20.000Z" title="发表于 2024-07-30 00:00:20">2024-07-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/07/29/Linux%E5%9F%BA%E7%A1%80/Linux%E5%9F%BA%E7%A1%80/" title="Linux基础">Linux基础</a><time datetime="2024-07-29T16:00:00.000Z" title="发表于 2024-07-30 00:00:00">2024-07-30</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div><!-- hexo injector body_end start --><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v7.3.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.org/" style="margin-inline:5px" data-title="主题版本Butterfly_v4.13.0" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/bottom.js"></script><!-- hexo injector body_end end --></body></html>
